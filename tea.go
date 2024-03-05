@@ -39,14 +39,17 @@ type Msg interface{}
 type Model interface {
 	// Init is the first function that will be called. It returns an optional
 	// initial command. To not perform an initial command return nil.
+	// 相当于初始化数据，实际场景的数据很有可能是动态加载的
 	Init() Cmd
 
 	// Update is called when a message is received. Use it to inspect messages
 	// and, in response, update the model and/or send a command.
+	// 当收到用户输入的消息时更新模型
 	Update(Msg) (Model, Cmd)
 
 	// View renders the program's UI, which is just a string. The view is
 	// rendered after every Update.
+	// 渲染UI
 	View() string
 }
 
@@ -540,6 +543,7 @@ func (p *Program) Run() (Model, error) {
 	handlers.add(p.handleCommands(cmds))
 
 	// Run event loop, handle updates and draw.
+	// 这里应该就是在不停的接受用户的数据，渲染命令行
 	model, err := p.eventLoop(model, cmds)
 	killed := p.ctx.Err() != nil
 	if killed {
