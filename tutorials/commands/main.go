@@ -36,11 +36,14 @@ type errMsg struct{ err error }
 func (e errMsg) Error() string { return e.err.Error() }
 
 func (m model) Init() tea.Cmd {
+	fmt.Printf("init......")
 	return checkServer
 }
 
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	fmt.Printf("Update...")
 	switch msg := msg.(type) {
+	// 执行请求，要么是获取到状态了，要么获取到error了
 	case statusMsg:
 		m.status = int(msg)
 		return m, tea.Quit
@@ -50,6 +53,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m, tea.Quit
 
 	case tea.KeyMsg:
+		// 如果检测到了ctrl+c，直接退出程序
 		if msg.Type == tea.KeyCtrlC {
 			return m, tea.Quit
 		}
@@ -59,6 +63,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m model) View() string {
+	fmt.Printf("View...")
 	if m.err != nil {
 		return fmt.Sprintf("\nWe had some trouble: %v\n\n", m.err)
 	}
