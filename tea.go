@@ -49,7 +49,7 @@ type Model interface {
 
 	// View renders the program's UI, which is just a string. The view is
 	// rendered after every Update.
-	// 渲染UI
+	// 渲染UI，模型更新之后回重新渲染
 	View() string
 }
 
