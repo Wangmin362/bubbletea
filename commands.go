@@ -12,6 +12,8 @@ import (
 //	    func (m model) Init() Cmd {
 //		       return tea.Batch(someCommand, someOtherCommand)
 //	    }
+//
+// 执行串行命令
 func Batch(cmds ...Cmd) Cmd {
 	var validCmds []Cmd //nolint:prealloc
 	for _, c := range cmds {

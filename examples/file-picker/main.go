@@ -81,8 +81,11 @@ func (m model) View() string {
 }
 
 func main() {
+	// 实例化一个文件选择组件
 	fp := filepicker.New()
+	// 允许选择的文件类型
 	fp.AllowedTypes = []string{".mod", ".sum", ".go", ".txt", ".md"}
+	// 设置当前目录
 	fp.CurrentDirectory, _ = os.UserHomeDir()
 
 	m := model{

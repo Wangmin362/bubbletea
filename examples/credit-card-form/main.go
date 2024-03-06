@@ -120,13 +120,14 @@ func initialModel() model {
 	inputs[cvv].Validate = cvvValidator
 
 	return model{
-		inputs:  inputs,
+		inputs:  inputs, // 文本输入框
 		focused: 0,
 		err:     nil,
 	}
 }
 
 func (m model) Init() tea.Cmd {
+	// 光标闪烁
 	return textinput.Blink
 }
 
@@ -148,12 +149,15 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case tea.KeyTab, tea.KeyCtrlN:
 			m.nextInput()
 		}
+		// 所有的文本输入框取消聚焦
 		for i := range m.inputs {
 			m.inputs[i].Blur()
 		}
+		// 当前编辑的文本输入框聚焦
 		m.inputs[m.focused].Focus()
 
 	// We handle errors just like any other message
+	// 如果有错误，那么不更新数据，不进行渲染
 	case errMsg:
 		m.err = msg
 		return m, nil
@@ -162,6 +166,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	for i := range m.inputs {
 		m.inputs[i], cmds[i] = m.inputs[i].Update(msg)
 	}
+	// 执行更新命令，重新渲染文本框
 	return m, tea.Batch(cmds...)
 }
 

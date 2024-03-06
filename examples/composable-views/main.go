@@ -26,13 +26,13 @@ type sessionState uint
 
 const (
 	defaultTime              = time.Minute
-	timerView   sessionState = iota
-	spinnerView
+	timerView   sessionState = iota // 0
+	spinnerView                     // 1
 )
 
 var (
 	// Available spinners
-	spinners = []spinner.Spinner{
+	spinners = []spinner.Spinner{ // 旋转器不同的样式
 		spinner.Line,
 		spinner.Dot,
 		spinner.MiniDot,
@@ -43,11 +43,13 @@ var (
 		spinner.Moon,
 		spinner.Monkey,
 	}
+	// 非聚焦的样式
 	modelStyle = lipgloss.NewStyle().
 			Width(15).
 			Height(5).
 			Align(lipgloss.Center, lipgloss.Center).
 			BorderStyle(lipgloss.HiddenBorder())
+		// 聚焦样式
 	focusedModelStyle = lipgloss.NewStyle().
 				Width(15).
 				Height(5).
@@ -59,10 +61,10 @@ var (
 )
 
 type mainModel struct {
-	state   sessionState
-	timer   timer.Model
-	spinner spinner.Model
-	index   int
+	state   sessionState  // 记录当前光标指向的位置
+	timer   timer.Model   // 内嵌了时间组件
+	spinner spinner.Model // 内嵌了旋转器组件
+	index   int           // 记录旋转器当前需要使用的样式索引
 }
 
 func newModel(timeout time.Duration) mainModel {
@@ -86,21 +88,25 @@ func (m mainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "ctrl+c", "q":
 			return m, tea.Quit
 		case "tab":
+			// 按住tab键，控制当前聚焦在哪个文本框里面
 			if m.state == timerView {
 				m.state = spinnerView
 			} else {
 				m.state = timerView
 			}
 		case "n":
+			// 如果是计时器，那么重置计时器
 			if m.state == timerView {
-				m.timer = timer.New(defaultTime)
-				cmds = append(cmds, m.timer.Init())
-			} else {
-				m.Next()
-				m.resetSpinner()
-				cmds = append(cmds, m.spinner.Tick)
+				m.timer = timer.New(defaultTime)    // 重置定时器
+				cmds = append(cmds, m.timer.Init()) // 添加命令
+			} else { // 否则，肯定就是旋转器了
+				m.Next()                            // 选择下一个旋转器的样式
+				m.resetSpinner()                    // 重置旋转器的样式
+				cmds = append(cmds, m.spinner.Tick) // 添加命令
 			}
 		}
+
+		// 接下来需要渲染当前选中的组件，切换之后，手动更新一次组件
 		switch m.state {
 		// update whichever model is focused
 		case spinnerView:
@@ -111,9 +117,11 @@ func (m mainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			cmds = append(cmds, cmd)
 		}
 	case spinner.TickMsg:
+		// 更新旋转器，实际上旋转器之所以看起来在动，就是通过这里看更新的
 		m.spinner, cmd = m.spinner.Update(msg)
 		cmds = append(cmds, cmd)
 	case timer.TickMsg:
+		// 更新定时器，这里看到计时器在动也是因为这里一直在更新
 		m.timer, cmd = m.timer.Update(msg)
 		cmds = append(cmds, cmd)
 	}
@@ -123,10 +131,15 @@ func (m mainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 func (m mainModel) View() string {
 	var s string
 	model := m.currentFocusedModel()
-	if m.state == timerView {
-		s += lipgloss.JoinHorizontal(lipgloss.Top, focusedModelStyle.Render(fmt.Sprintf("%4s", m.timer.View())), modelStyle.Render(m.spinner.View()))
-	} else {
-		s += lipgloss.JoinHorizontal(lipgloss.Top, modelStyle.Render(fmt.Sprintf("%4s", m.timer.View())), focusedModelStyle.Render(m.spinner.View()))
+	if m.state == timerView { // 计时器
+		s += lipgloss.JoinHorizontal(
+			lipgloss.Top,
+			focusedModelStyle.Render(fmt.Sprintf("%4s", m.timer.View())), // 注意这里聚焦窗口的使用，把计时器包裹在里面
+			modelStyle.Render(m.spinner.View()))                          // 注意这里
+	} else { // 旋转器
+		s += lipgloss.JoinHorizontal(lipgloss.Top,
+			modelStyle.Render(fmt.Sprintf("%4s", m.timer.View())), // 非聚焦
+			focusedModelStyle.Render(m.spinner.View()))            // 聚焦窗口把旋转器包裹了起来
 	}
 	s += helpStyle.Render(fmt.Sprintf("\ntab: focus next • n: new %s • q: exit\n", model))
 	return s
@@ -140,7 +153,7 @@ func (m mainModel) currentFocusedModel() string {
 }
 
 func (m *mainModel) Next() {
-	if m.index == len(spinners)-1 {
+	if m.index == len(spinners)-1 { // 从头开始展示
 		m.index = 0
 	} else {
 		m.index++

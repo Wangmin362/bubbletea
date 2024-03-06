@@ -9,9 +9,12 @@ import (
 )
 
 var (
-	color   = termenv.EnvColorProfile().Color
+	// 用于设置原色
+	color = termenv.EnvColorProfile().Color
+	// 关键字颜色
 	keyword = termenv.Style{}.Foreground(color("204")).Background(color("235")).Styled
-	help    = termenv.Style{}.Foreground(color("241")).Styled
+	// 帮助颜色
+	help = termenv.Style{}.Foreground(color("241")).Styled
 )
 
 type model struct {
@@ -30,12 +33,12 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "q", "ctrl+c", "esc":
 			m.quitting = true
 			return m, tea.Quit
-		case " ":
+		case " ": // 通过空格切换是进入全屏还是退出全屏
 			var cmd tea.Cmd
 			if m.altscreen {
-				cmd = tea.ExitAltScreen
+				cmd = tea.ExitAltScreen // 退出全屏
 			} else {
-				cmd = tea.EnterAltScreen
+				cmd = tea.EnterAltScreen // 进入全屏
 			}
 			m.altscreen = !m.altscreen
 			return m, cmd
@@ -45,13 +48,14 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m model) View() string {
+	// 如果退出了，打印下面这段话
 	if m.quitting {
 		return "Bye!\n"
 	}
 
 	const (
-		altscreenMode = " altscreen mode "
-		inlineMode    = " inline mode "
+		altscreenMode = " altscreen mode " // 全屏模式
+		inlineMode    = " inline mode "    // 命令行模式
 	)
 
 	var mode string

@@ -30,6 +30,7 @@ func (m model) Init() tea.Cmd {
 	return nil
 }
 
+// 有点没看懂，这里是怎么防抖动的
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:

@@ -19,15 +19,19 @@ func main() {
 	}
 }
 
-type gotReposSuccessMsg []repo
-type gotReposErrMsg error
+type (
+	gotReposSuccessMsg []repo
+	gotReposErrMsg     error
+)
 
+// 用于反序列化当前的仓库名
 type repo struct {
 	Name string `json:"name"`
 }
 
 const reposURL = "https://api.github.com/orgs/charmbracelet/repos"
 
+// 这里非常简单，就是获取charmbracelet仓库底下的所有项目
 func getRepos() tea.Msg {
 	req, err := http.NewRequest(http.MethodGet, reposURL, nil)
 	if err != nil {
@@ -59,6 +63,7 @@ func getRepos() tea.Msg {
 }
 
 type model struct {
+	// 文本框输入模型
 	textInput textinput.Model
 }
 
@@ -74,7 +79,9 @@ func initialModel() model {
 	return model{textInput: ti}
 }
 
+// 用于初始化数据，有些数据是通过动态的方式获取的
 func (m model) Init() tea.Cmd {
+	// textinput.Blink用于执行光标闪烁
 	return tea.Batch(getRepos, textinput.Blink)
 }
 
@@ -92,6 +99,8 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 		m.textInput.SetSuggestions(suggestions)
 	}
+
+	// 之所以在这里没有看到处理ctrl+n, ctrl+p，是因为textinput.Model已经自动处理了
 
 	var cmd tea.Cmd
 	m.textInput, cmd = m.textInput.Update(msg)
