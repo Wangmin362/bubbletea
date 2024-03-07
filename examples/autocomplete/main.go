@@ -108,9 +108,10 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m model) View() string {
-	return fmt.Sprintf(
+	res := fmt.Sprintf(
 		"What’s your favorite Charm repository?\n\n%s\n\n%s\n",
 		m.textInput.View(),
 		"(tab to complete, ctrl+n/ctrl+p to cycle through suggestions, esc to quit)",
 	)
+	return res
 }
